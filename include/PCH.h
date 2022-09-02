@@ -24,6 +24,8 @@
 #	endif
 #endif
 
+//#undef NDEBUG
+
 #include <ShlObj_core.h>
 #include <Windows.h>
 
