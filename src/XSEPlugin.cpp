@@ -15,6 +15,7 @@ static void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 				switch (calltype) {
 				case ENBCallbackType::ENBCallback_PostLoad:
 					Reflex::GetSingleton()->LoadJSON();
+					Reflex::GetSingleton()->RefreshUI();
 					break;
 				case ENBCallbackType::ENBCallback_PreSave:
 					Reflex::GetSingleton()->SaveJSON();
@@ -61,7 +62,7 @@ void InitializeLog()
 #ifndef NDEBUG
 	const auto level = spdlog::level::trace;
 #else
-	const auto level = spdlog::level::debug;
+	const auto level = spdlog::level::info;
 #endif
 
 	auto log = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
