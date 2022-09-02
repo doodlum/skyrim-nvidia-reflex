@@ -53,7 +53,7 @@ struct Hooks
 
 	static void Install()
 	{
-		stl::write_thunk_call<CalledDuringRenderStartup>(REL::RelocationID(75595, 36550).address() + REL::Relocate(0x50, 0x11F));
+		stl::write_thunk_call<CalledDuringRenderStartup>(REL::RelocationID(75595, 77403).address() + REL::Relocate(0x50, 0x50));
 	}
 };
 
