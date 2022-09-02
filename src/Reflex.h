@@ -39,7 +39,7 @@ public:
 	};
 
 	bool  bReflexEnabled = false;
-	bool  bFPSOverride = true;
+	bool  bFPSOverride = false;
 	float fFPSOverrideLimit = 60;
 
 	bool  bLowLatencyMode = true;
