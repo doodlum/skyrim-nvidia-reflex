@@ -37,15 +37,20 @@ struct Hooks
 	{
 		static void thunk()
 		{
+			logger::info("Calling original function");
 			func();
+
+			logger::info("Accessing render device information");
 			auto manager = RE::BSRenderManager::GetSingleton();
 			g_Device = manager->GetRuntimeData().forwarder;
 			g_DeviceContext = manager->GetRuntimeData().context;
 			g_SwapChain = manager->GetRuntimeData().swapChain;
 
+			logger::info("Detouring virtual function tables");
 			*(uintptr_t*)&ptrPresent = Detours::X64::DetourClassVTable(*(uintptr_t*)g_SwapChain, &hk_IDXGISwapChain_Present, 8);
 			*(uintptr_t*)&ptrClearState = Detours::X64::DetourClassVTable(*(uintptr_t*)g_DeviceContext, &hk_ClearState, 110);
 			
+			logger::info("Setting sleep mode for the first time");
 			Reflex::GetSingleton()->NVAPI_SetSleepMode();
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
@@ -54,6 +59,7 @@ struct Hooks
 	static void Install()
 	{
 		stl::write_thunk_call<CalledDuringRenderStartup>(REL::RelocationID(75595, 77226).address() + REL::Relocate(0x50, 0x2BC));
+		logger::info("Installed render startup hook");
 	}
 };
 

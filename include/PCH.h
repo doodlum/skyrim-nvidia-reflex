@@ -24,9 +24,11 @@
 #	endif
 #endif
 
-//#undef NDEBUG
+#undef NDEBUG
 
-#include <ShlObj_core.h>
+#define MAGIC_ENUM_RANGE_MAX 256
+#include <magic_enum.hpp>
+
 #include <Windows.h>
 
 #ifdef NDEBUG

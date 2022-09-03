@@ -6,8 +6,8 @@ extern ID3D11Device*        g_Device;
 extern IDXGISwapChain*      g_SwapChain;
 
 extern uintptr_t g_ModuleBase;
-extern HMODULE g_DllDXGI;
-extern HMODULE  g_DllD3D11;
+extern HMODULE   g_DllDXGI;
+extern HMODULE   g_DllD3D11;
 
 // Exports
 
@@ -51,11 +51,12 @@ void Reflex::Initialize()
 			logger::info("Found {} NVIDIA GPUs", NVAPI_gpuCount);
 			gpuType = GPUType::NVIDIA;
 			logger::info("Using NVAPI");
-			return;
+		} else {
+			logger::error("Did not find a NVIDIA GPU");
 		}
+	} else {
+		logger::error("Could not initialize NVAPI");
 	}
-
-	logger::error("Did not find a NVIDIA GPU");
 }
 
 bool Reflex::InitializeNVAPI()
@@ -94,9 +95,17 @@ void Reflex::NVAPI_SetSleepMode()
 			params.minimumIntervalUs = (NvU32)((1000.0f / fFPSOverrideLimit) * 1000.0f);
 		else
 			params.minimumIntervalUs = bUseFPSLimit ? (NvU32)((1000.0f / fFPSLimit) * 1000.0f) : 0;  // 0 means no requested framerate limit
-		params.bUseMarkersToOptimize = bUseMarkersToOptimize;                         // Only works with bLowLatencyBoost
+		params.bUseMarkersToOptimize = bUseMarkersToOptimize;                                        // Only works with bLowLatencyBoost
 		status = NvAPI_D3D_SetSleepMode(g_Device, &params);
 		bReflexEnabled = (status == NVAPI_OK);
+		if (status != lastStatus) {
+			if (bReflexEnabled) {
+				logger::info("Reflex enabled, returned status code {}", magic_enum::enum_name(status));
+			} else {
+				logger::info("Reflex not enabled, returned status code {}", magic_enum::enum_name(status));
+			}
+			lastStatus = status;
+		}
 	}
 }
 
@@ -105,7 +114,9 @@ bool Reflex::NVAPI_SetLatencyMarker(NV_LATENCY_MARKER_TYPE marker)
 	NvAPI_Status ret = NVAPI_INVALID_CONFIGURATION;
 
 	if (bReflexEnabled) {
-		if (marker == SIMULATION_START)
+		if (marker == SIMULATION_START && bSleepOnSimulationStart)
+			NvAPI_D3D_Sleep(g_Device);
+		if (marker == PRESENT_END && !bSleepOnSimulationStart)
 			NvAPI_D3D_Sleep(g_Device);
 		NV_LATENCY_MARKER_PARAMS
 		markerParams = {};
@@ -132,6 +143,8 @@ void Reflex::LoadJSON()
 	bLowLatencyBoost = JSONSettings["bLowLatencyBoost"];
 	bUseMarkersToOptimize = JSONSettings["bUseMarkersToOptimize"];
 
+	bSleepOnSimulationStart = JSONSettings["bSleepOnSimulationStart"];
+
 	bUseFPSLimit = JSONSettings["bUseFPSLimit"];
 	fFPSLimit = JSONSettings["fFPSLimit"];
 }
@@ -139,9 +152,13 @@ void Reflex::LoadJSON()
 void Reflex::SaveJSON()
 {
 	std::ofstream o(L"Data\\SKSE\\Plugins\\NVIDIA_Reflex.json");
+
 	JSONSettings["bLowLatencyMode"] = bLowLatencyMode;
 	JSONSettings["bLowLatencyBoost"] = bLowLatencyBoost;
 	JSONSettings["bUseMarkersToOptimize"] = bUseMarkersToOptimize;
+
+	JSONSettings["bSleepOnSimulationStart"] = bSleepOnSimulationStart;
+
 	JSONSettings["bUseFPSLimit"] = bUseFPSLimit;
 	JSONSettings["fFPSLimit"] = fFPSLimit;
 
@@ -207,11 +224,12 @@ void GetTargetFPS(void* value, [[maybe_unused]] void* clientData)
 
 void Reflex::RefreshUI()
 {
-	auto bar = g_ENB->TwGetBarByEnum(ENB_API::ENBWindowType::EditorBarEffects);
+	auto bar = g_ENB->TwGetBarByEnum(!REL::Module::IsVR() ? ENB_API::ENBWindowType::EditorBarEffects : ENB_API::ENBWindowType::EditorBarObjects);  // ENB misnames its own bar, whoops!
 	g_ENB->TwAddVarRW(bar, "NVIDIA Reflex Enabled", ETwType::TW_TYPE_BOOLCPP, &bReflexEnabled, "group='MOD:NVIDIA Reflex' readonly=true");
 	g_ENB->TwAddVarCB(bar, "Enable Low Latency Mode", ETwType::TW_TYPE_BOOLCPP, SetLowLatencyMode, GetLowLatencyMode, this, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "Enable Low Latency Boost", ETwType::TW_TYPE_BOOLCPP, SetLowLatencyBoost, GetLowLatencyBoost, this, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "Use Markers To Optimize", ETwType::TW_TYPE_BOOLCPP, SetUseMarkersToOptimize, GetUseMarkersToOptimize, this, "group='MOD:NVIDIA Reflex'");
+	g_ENB->TwAddVarRW(bar, "Sleep On Simulation Start", ETwType::TW_TYPE_BOOLCPP, &bSleepOnSimulationStart, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "Enable FPS Limit", ETwType::TW_TYPE_BOOLCPP, SetUseFPSLimit, GetUseFPSLimit, this, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "FPS Limit", ETwType::TW_TYPE_FLOAT, SetTargetFPS, GetTargetFPS, this, "group='MOD:NVIDIA Reflex' min=30.00 max=1000.0 step=1.00");
 }
