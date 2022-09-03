@@ -2,6 +2,7 @@
     "bLowLatencyMode" : true,
     "bLowLatencyBoost": true,
     "bUseMarkersToOptimize": true,
+    "bSleepOnSimulationStart": false,
     "bUseFPSLimit": false,
     "fFPSLimit": 60
 }

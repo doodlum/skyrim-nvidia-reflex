@@ -38,6 +38,8 @@ public:
 		UNKNOWN
 	};
 
+	NvAPI_Status lastStatus = NVAPI_INVALID_CONFIGURATION;
+
 	bool  bReflexEnabled = false;
 	bool  bFPSOverride = false;
 	float fFPSOverrideLimit = 60;
@@ -45,6 +47,7 @@ public:
 	bool  bLowLatencyMode = true;
 	bool  bLowLatencyBoost = true;
 	bool  bUseMarkersToOptimize = true;
+	bool  bSleepOnSimulationStart = false;
 	bool  bUseFPSLimit = false;
 	float fFPSLimit = 60;
 
