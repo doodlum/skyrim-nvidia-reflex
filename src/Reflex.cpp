@@ -1,14 +1,6 @@
 #include "Reflex.h"
 #include <ENB/ENBSeriesAPI.h>
 
-extern ID3D11DeviceContext* g_DeviceContext;
-extern ID3D11Device*        g_Device;
-extern IDXGISwapChain*      g_SwapChain;
-
-extern uintptr_t g_ModuleBase;
-extern HMODULE   g_DllDXGI;
-extern HMODULE   g_DllD3D11;
-
 // Exports
 
 EXTERN_C bool GetReflexEnabled()
@@ -114,10 +106,6 @@ bool Reflex::NVAPI_SetLatencyMarker(NV_LATENCY_MARKER_TYPE marker)
 	NvAPI_Status ret = NVAPI_INVALID_CONFIGURATION;
 
 	if (bReflexEnabled) {
-		if (marker == SIMULATION_START && bSleepOnSimulationStart)
-			NvAPI_D3D_Sleep(g_Device);
-		if (marker == PRESENT_END && !bSleepOnSimulationStart)
-			NvAPI_D3D_Sleep(g_Device);
 		NV_LATENCY_MARKER_PARAMS
 		markerParams = {};
 		markerParams.version = NV_LATENCY_MARKER_PARAMS_VER;
@@ -143,8 +131,6 @@ void Reflex::LoadJSON()
 	bLowLatencyBoost = JSONSettings["bLowLatencyBoost"];
 	bUseMarkersToOptimize = JSONSettings["bUseMarkersToOptimize"];
 
-	bSleepOnSimulationStart = JSONSettings["bSleepOnSimulationStart"];
-
 	bUseFPSLimit = JSONSettings["bUseFPSLimit"];
 	fFPSLimit = JSONSettings["fFPSLimit"];
 }
@@ -156,8 +142,6 @@ void Reflex::SaveJSON()
 	JSONSettings["bLowLatencyMode"] = bLowLatencyMode;
 	JSONSettings["bLowLatencyBoost"] = bLowLatencyBoost;
 	JSONSettings["bUseMarkersToOptimize"] = bUseMarkersToOptimize;
-
-	JSONSettings["bSleepOnSimulationStart"] = bSleepOnSimulationStart;
 
 	JSONSettings["bUseFPSLimit"] = bUseFPSLimit;
 	JSONSettings["fFPSLimit"] = fFPSLimit;
@@ -229,7 +213,6 @@ void Reflex::RefreshUI()
 	g_ENB->TwAddVarCB(bar, "Enable Low Latency Mode", ETwType::TW_TYPE_BOOLCPP, SetLowLatencyMode, GetLowLatencyMode, this, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "Enable Low Latency Boost", ETwType::TW_TYPE_BOOLCPP, SetLowLatencyBoost, GetLowLatencyBoost, this, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "Use Markers To Optimize", ETwType::TW_TYPE_BOOLCPP, SetUseMarkersToOptimize, GetUseMarkersToOptimize, this, "group='MOD:NVIDIA Reflex'");
-	g_ENB->TwAddVarRW(bar, "Sleep On Simulation Start", ETwType::TW_TYPE_BOOLCPP, &bSleepOnSimulationStart, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "Enable FPS Limit", ETwType::TW_TYPE_BOOLCPP, SetUseFPSLimit, GetUseFPSLimit, this, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "FPS Limit", ETwType::TW_TYPE_FLOAT, SetTargetFPS, GetTargetFPS, this, "group='MOD:NVIDIA Reflex' min=30.00 max=1000.0 step=1.00");
 }
