@@ -207,7 +207,7 @@ void GetTargetFPS(void* value, [[maybe_unused]] void* clientData)
 
 void Reflex::RefreshUI()
 {
-	auto bar = g_ENB->TwGetBarByEnum(ENB_API::ENBWindowType::EditorBarEffects);
+	auto bar = g_ENB->TwGetBarByEnum(!REL::Module::IsVR() ? ENB_API::ENBWindowType::EditorBarEffects : ENB_API::ENBWindowType::EditorBar1);
 	g_ENB->TwAddVarRW(bar, "NVIDIA Reflex Enabled", ETwType::TW_TYPE_BOOLCPP, &bReflexEnabled, "group='MOD:NVIDIA Reflex' readonly=true");
 	g_ENB->TwAddVarCB(bar, "Enable Low Latency Mode", ETwType::TW_TYPE_BOOLCPP, SetLowLatencyMode, GetLowLatencyMode, this, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "Enable Low Latency Boost", ETwType::TW_TYPE_BOOLCPP, SetLowLatencyBoost, GetLowLatencyBoost, this, "group='MOD:NVIDIA Reflex'");
