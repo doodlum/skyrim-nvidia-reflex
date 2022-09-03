@@ -24,7 +24,7 @@
 #	endif
 #endif
 
-#undef NDEBUG
+//#undef NDEBUG
 
 #define MAGIC_ENUM_RANGE_MAX 256
 #include <magic_enum.hpp>
