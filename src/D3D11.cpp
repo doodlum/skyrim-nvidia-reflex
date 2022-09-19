@@ -31,6 +31,8 @@ HRESULT WINAPI hk_IDXGISwapChain_Present(IDXGISwapChain* This, UINT SyncInterval
 	Reflex::GetSingleton()->NVAPI_SetLatencyMarker(PRESENT_START);
 	auto hr = (This->*ptrPresent)(SyncInterval, Flags);
 	Reflex::GetSingleton()->NVAPI_SetLatencyMarker(PRESENT_END);
+	if (Reflex::GetSingleton()->bReflexEnabled)
+		NvAPI_D3D_Sleep(g_Device);
 	Reflex::GetSingleton()->NVAPI_SetLatencyMarker(INPUT_SAMPLE);
 	return hr;
 }
