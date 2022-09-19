@@ -78,10 +78,7 @@ protected:
 				Reflex::GetSingleton()->NVAPI_SetLatencyMarker(SIMULATION_START);
 #ifndef FALLOUT4
 				Reflex::GetSingleton()->NVAPI_SetLatencyMarker(INPUT_SAMPLE);
-#else
-				if (GetSingleton()->bReflexEnabled)
-					NvAPI_D3D_Sleep(g_Device);
-				#endif
+#endif
 				func(a_unk);
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
