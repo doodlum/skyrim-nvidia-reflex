@@ -13,7 +13,8 @@
                 "commonlibsse-ng",
                 "nlohmann-json",
                 "simpleini",
-                "magic-enum"
+                "magic-enum",
+                "rsm-mmio"
             ]
         }
     },

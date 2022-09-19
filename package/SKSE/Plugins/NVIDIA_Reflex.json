@@ -1,7 +1,0 @@
-{
-    "bLowLatencyMode" : true,
-    "bLowLatencyBoost": true,
-    "bUseMarkersToOptimize": true,
-    "bUseFPSLimit": false,
-    "fFPSLimit": 60
-}
