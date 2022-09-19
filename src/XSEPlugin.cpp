@@ -14,11 +14,12 @@ static void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			g_ENB->SetCallbackFunction([](ENBCallbackType calltype) {
 				switch (calltype) {
 				case ENBCallbackType::ENBCallback_PostLoad:
-					Reflex::GetSingleton()->LoadJSON();
+					Reflex::GetSingleton()->LoadINI();
 					Reflex::GetSingleton()->RefreshUI();
 					break;
 				case ENBCallbackType::ENBCallback_PreSave:
-					Reflex::GetSingleton()->SaveJSON();
+					Reflex::GetSingleton()->SaveINI();
+					Reflex::GetSingleton()->RefreshUI();
 					break;
 				case ENBCallbackType::ENBCallback_OnInit:;
 					Reflex::GetSingleton()->RefreshUI();
@@ -40,9 +41,8 @@ void PatchD3D11();
 void Init()
 {
 	SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
-	Reflex::InstallHooks();
 	PatchD3D11();
-	Reflex::GetSingleton()->Initialize();
+	Reflex::InstallHooks();
 }
 
 void InitializeLog()
@@ -90,6 +90,7 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	return true;
 }
 
+#ifndef FALLOUT4
 EXTERN_C [[maybe_unused]] __declspec(dllexport) constinit auto SKSEPlugin_Version = []() noexcept {
 	SKSE::PluginVersionData v;
 	v.PluginName("PluginName");
@@ -97,11 +98,12 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) constinit auto SKSEPlugin_Versio
 	v.UsesAddressLibrary(true);
 	return v;
 }();
+#endif
 
 EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface*, SKSE::PluginInfo* pluginInfo)
 {
-	pluginInfo->name = SKSEPlugin_Version.pluginName;
+	pluginInfo->name = Plugin::NAME.data();
 	pluginInfo->infoVersion = SKSE::PluginInfo::kVersion;
-	pluginInfo->version = SKSEPlugin_Version.pluginVersion;
+	pluginInfo->version = 1;
 	return true;
 }

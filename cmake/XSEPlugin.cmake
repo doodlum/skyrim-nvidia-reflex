@@ -13,8 +13,8 @@ elseif(BUILD_SKYRIMVR)
 	set(GameVersion "Skyrim VR")
 elseif(BUILD_FALLOUT4)
 	add_compile_definitions(FALLOUT4)
-	set(CommonLibPath "CommonLibF4/CommonLibF4")
-	set(CommonLibName "external/CommonLibF4")
+	set(CommonLibPath "extern/CommonLibF4/CommonLibF4")
+	set(CommonLibName "CommonLibF4")
 	set(GameVersion "Fallout 4")
 else()
 	message(
@@ -150,6 +150,17 @@ if (BUILD_SKYRIM)
 	)
 else()
 	add_subdirectory(${CommonLibPath} ${CommonLibName} EXCLUDE_FROM_ALL)
+	target_link_libraries(
+		${PROJECT_NAME} 
+		PUBLIC 
+		${CommonLibName}::${CommonLibName}
+		PRIVATE
+			nlohmann_json::nlohmann_json
+			magic_enum::magic_enum
+			debug ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Debug/detours.lib
+			optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Release/detours.lib
+			optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/nvapi/nvapi64.lib
+	)
 endif()
 
 find_package(spdlog CONFIG REQUIRED)

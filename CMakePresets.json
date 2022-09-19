@@ -74,9 +74,9 @@
 			"name": "skyrim"
 		},
 		{
-			"binaryDir": "${sourceDir}/build/vr",
+			"binaryDir": "${sourceDir}/build/fo4",
 			"cacheVariables": {
-				"BUILD_SKYRIMVR": true
+				"BUILD_FALLOUT4": true
 			},
 			"inherits": [
 				"cmake-dev",
@@ -84,7 +84,7 @@
 				"windows",
 				"vs2022-windows"
 			],
-			"name": "vr"
+			"name": "fo4"
 		}
 	],
 	"version": 3

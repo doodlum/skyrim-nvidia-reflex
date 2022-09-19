@@ -1,4 +1,6 @@
 #include "Reflex.h"
+
+#include <SimpleIni.h>
 #include <ENB/ENBSeriesAPI.h>
 
 // Exports
@@ -39,8 +41,12 @@ void Reflex::Initialize()
 {
 	if (InitializeNVAPI()) {
 		logger::info("NVAPI Initialised");
-		if (NVAPI_gpuCount > 0) {
-			logger::info("Found {} NVIDIA GPUs", NVAPI_gpuCount);
+		NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS] = { 0 };
+		NvU32 gpuCount = 0;
+		// Get all the Physical GPU Handles
+		NvAPI_EnumPhysicalGPUs(nvGPUHandle, &gpuCount);
+		if (gpuCount > 0) {
+			logger::info("Found {} NVIDIA GPUs", gpuCount);
 			gpuType = GPUType::NVIDIA;
 			logger::info("Using NVAPI");
 		} else {
@@ -53,26 +59,11 @@ void Reflex::Initialize()
 
 bool Reflex::InitializeNVAPI()
 {
-	HMODULE hNVAPI_DLL = LoadLibraryA("nvapi64.dll");
+	NvAPI_Status ret = NVAPI_OK;
 
-	if (!hNVAPI_DLL)
-		return false;
+	ret = NvAPI_Initialize();
 
-	// nvapi_QueryInterface is a function used to retrieve other internal functions in nvapi.dll
-	NVAPI_QueryInterface = (NVAPI_QueryInterface_t)GetProcAddress(hNVAPI_DLL, "nvapi_QueryInterface");
-
-	// Some useful internal functions that aren't exported by nvapi.dll
-	NVAPI_Initialize = (NVAPI_Initialize_t)(*NVAPI_QueryInterface)(0x0150E828);
-	NVAPI_EnumPhysicalGPUs = (NVAPI_EnumPhysicalGPUs_t)(*NVAPI_QueryInterface)(0xE5AC921F);
-
-	if (NVAPI_Initialize != nullptr &&
-		NVAPI_EnumPhysicalGPUs != nullptr) {
-		(*NVAPI_Initialize)();
-		(*NVAPI_EnumPhysicalGPUs)(NVAPI_gpuHandles, &NVAPI_gpuCount);
-		return true;
-	}
-
-	return false;
+	return ret == NVAPI_OK;
 };
 
 void Reflex::NVAPI_SetSleepMode()
@@ -122,31 +113,44 @@ bool Reflex::NVAPI_SetLatencyMarker(NV_LATENCY_MARKER_TYPE marker)
 
 // ENBSeries GUI
 
-void Reflex::LoadJSON()
+#define GetSettingFloat(a_section, a_setting) a_setting = (float)ini.GetDoubleValue(a_section, #a_setting, 1.0f);
+#define SetSettingFloat(a_section, a_setting) ini.SetDoubleValue(a_section, #a_setting, a_setting);
+
+#define GetSettingBool(a_section, a_setting) a_setting = ini.GetBoolValue(a_section, #a_setting, true);
+#define SetSettingBool(a_section, a_setting) ini.SetBoolValue(a_section, #a_setting, a_setting);
+
+void Reflex::LoadINI()
 {
-	std::ifstream i(L"Data\\SKSE\\Plugins\\NVIDIA_Reflex.json");
-	i >> JSONSettings;
-
-	bLowLatencyMode = JSONSettings["bLowLatencyMode"];
-	bLowLatencyBoost = JSONSettings["bLowLatencyBoost"];
-	bUseMarkersToOptimize = JSONSettings["bUseMarkersToOptimize"];
-
-	bUseFPSLimit = JSONSettings["bUseFPSLimit"];
-	fFPSLimit = JSONSettings["fFPSLimit"];
+	std::lock_guard<std::shared_mutex> lk(fileLock);
+	CSimpleIniA                        ini;
+	ini.SetUnicode();
+#ifndef FALLOUT4
+	ini.LoadFile(L"Data\\SKSE\\Plugins\\NVIDIA_Reflex.ini");
+#else
+	ini.LoadFile(L"Data\\F4SE\\Plugins\\NVIDIA_Reflex.ini");
+#endif
+	GetSettingBool("NVIDIA Reflex", bLowLatencyMode);
+	GetSettingBool("NVIDIA Reflex", bLowLatencyBoost);
+	GetSettingBool("NVIDIA Reflex", bUseMarkersToOptimize);
+	GetSettingBool("NVIDIA Reflex", bUseFPSLimit);
+	GetSettingFloat("NVIDIA Reflex", fFPSLimit);
 }
 
-void Reflex::SaveJSON()
+void Reflex::SaveINI()
 {
-	std::ofstream o(L"Data\\SKSE\\Plugins\\NVIDIA_Reflex.json");
-
-	JSONSettings["bLowLatencyMode"] = bLowLatencyMode;
-	JSONSettings["bLowLatencyBoost"] = bLowLatencyBoost;
-	JSONSettings["bUseMarkersToOptimize"] = bUseMarkersToOptimize;
-
-	JSONSettings["bUseFPSLimit"] = bUseFPSLimit;
-	JSONSettings["fFPSLimit"] = fFPSLimit;
-
-	o << JSONSettings.dump(1);
+	std::lock_guard<std::shared_mutex> lk(fileLock);
+	CSimpleIniA                        ini;
+	ini.SetUnicode();
+	SetSettingBool("NVIDIA Reflex", bLowLatencyMode);
+	SetSettingBool("NVIDIA Reflex", bLowLatencyBoost);
+	SetSettingBool("NVIDIA Reflex", bUseMarkersToOptimize);
+	SetSettingBool("NVIDIA Reflex", bUseFPSLimit);
+	SetSettingFloat("NVIDIA Reflex", fFPSLimit);
+#ifndef FALLOUT4
+	ini.SaveFile(L"Data\\SKSE\\Plugins\\NVIDIA_Reflex.ini");
+#else
+	ini.SaveFile(L"Data\\F4SE\\Plugins\\NVIDIA_Reflex.ini");
+#endif
 }
 
 extern ENB_API::ENBSDKALT1001* g_ENB;
@@ -208,7 +212,11 @@ void GetTargetFPS(void* value, [[maybe_unused]] void* clientData)
 
 void Reflex::RefreshUI()
 {
+#	ifndef FALLOUT4
 	auto bar = g_ENB->TwGetBarByEnum(!REL::Module::IsVR() ? ENB_API::ENBWindowType::EditorBarEffects : ENB_API::ENBWindowType::EditorBarObjects);  // ENB misnames its own bar, whoops!
+	#else
+	auto bar = g_ENB->TwGetBarByEnum(ENB_API::ENBWindowType::EditorBarEffects);
+	#endif
 	g_ENB->TwAddVarRW(bar, "NVIDIA Reflex Enabled", ETwType::TW_TYPE_BOOLCPP, &bReflexEnabled, "group='MOD:NVIDIA Reflex' readonly=true");
 	g_ENB->TwAddVarCB(bar, "Enable Low Latency Mode", ETwType::TW_TYPE_BOOLCPP, SetLowLatencyMode, GetLowLatencyMode, this, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "Enable Low Latency Boost", ETwType::TW_TYPE_BOOLCPP, SetLowLatencyBoost, GetLowLatencyBoost, this, "group='MOD:NVIDIA Reflex'");
