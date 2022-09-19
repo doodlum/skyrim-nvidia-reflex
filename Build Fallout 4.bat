@@ -10,6 +10,6 @@ if %ERRORLEVEL% NEQ 0 exit 1
 xcopy "build\fo4\release\*.dll" "dist\F4SE\Plugins\" /I /Y
 xcopy "build\fo4\release\*.pdb" "dist\F4SE\Plugins\" /I /Y
 
-xcopy "package" "dist" /I /Y /E
+xcopy "package\SKSE" "dist\F4SE" /I /Y /E
 
 pause
