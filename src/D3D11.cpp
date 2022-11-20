@@ -90,6 +90,8 @@ struct Hooks
 			logger::info("Detouring virtual function tables");
 			*(uintptr_t*)&ptrPresent = Detours::X64::DetourClassVTable(*(uintptr_t*)g_SwapChain, &hk_IDXGISwapChain_Present, 8);
 			*(uintptr_t*)&ptrClearState = Detours::X64::DetourClassVTable(*(uintptr_t*)g_DeviceContext, &hk_ClearState, 110);
+			logger::info("Initializing NVAPI");
+			Reflex::GetSingleton()->Initialize();
 			logger::info("Setting sleep mode for the first time");
 			Reflex::GetSingleton()->NVAPI_SetSleepMode();
 		}
