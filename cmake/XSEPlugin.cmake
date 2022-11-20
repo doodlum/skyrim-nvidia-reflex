@@ -1,16 +1,10 @@
 option(BUILD_SKYRIM "Build for Skyrim" OFF)
-option(BUILD_SKYRIMVR "Build for Skyrim VR" OFF)
 option(BUILD_FALLOUT4 "Build for Fallout 4" OFF)
 
 if(BUILD_SKYRIM)
 	add_compile_definitions(SKYRIM)
 	set(CommonLibName "CommonLibSSE")
 	set(GameVersion "Skyrim")
-elseif(BUILD_SKYRIMVR)
-	add_compile_definitions(SKYRIMVR)
-	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-	set(CommonLibName "CommonLibVR")
-	set(GameVersion "Skyrim VR")
 elseif(BUILD_FALLOUT4)
 	add_compile_definitions(FALLOUT4)
 	set(CommonLibPath "extern/CommonLibF4/CommonLibF4")
@@ -132,35 +126,23 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 	)
 endif()
 
-find_package(nlohmann_json CONFIG REQUIRED)
-find_package(magic_enum CONFIG REQUIRED)
-
 if (BUILD_SKYRIM)
 	find_package(CommonLibSSE REQUIRED)
-	target_link_libraries(
-		${PROJECT_NAME} 
-		PUBLIC 
-			CommonLibSSE::CommonLibSSE
-		PRIVATE
-			nlohmann_json::nlohmann_json
-			magic_enum::magic_enum
-			debug ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Debug/detours.lib
-			optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Release/detours.lib
-			optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/nvapi/nvapi64.lib
-	)
 else()
 	add_subdirectory(${CommonLibPath} ${CommonLibName} EXCLUDE_FROM_ALL)
-	target_link_libraries(
-		${PROJECT_NAME} 
-		PUBLIC 
-		${CommonLibName}::${CommonLibName}
-		PRIVATE
-			nlohmann_json::nlohmann_json
-			magic_enum::magic_enum
-			debug ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Debug/detours.lib
-			optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Release/detours.lib
-			optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/nvapi/nvapi64.lib
-	)
 endif()
+
+find_package(magic_enum CONFIG REQUIRED)
+
+target_link_libraries(
+	${PROJECT_NAME} 
+	PUBLIC 
+	${CommonLibName}::${CommonLibName}
+	PRIVATE
+		magic_enum::magic_enum
+		debug ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Debug/detours.lib
+		optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Release/detours.lib
+		optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/nvapi/nvapi64.lib
+)
 
 find_package(spdlog CONFIG REQUIRED)
