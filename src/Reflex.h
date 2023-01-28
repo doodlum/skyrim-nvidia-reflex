@@ -76,35 +76,15 @@ protected:
 			static void thunk(INT64 a_unk)
 			{
 				Reflex::GetSingleton()->NVAPI_SetLatencyMarker(SIMULATION_START);
-#ifndef FALLOUT4
 				Reflex::GetSingleton()->NVAPI_SetLatencyMarker(INPUT_SAMPLE);
-#endif
 				func(a_unk);
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 		};
-	
-#ifndef FALLOUT4
-		struct Main_Update_Timer
-		{
-			static void thunk(RE::Main* a_main)
-			{
-				if (GetSingleton()->bReflexEnabled)
-					NvAPI_D3D_Sleep(g_Device);
-				func(a_main);
-			}
-			static inline REL::Relocation<decltype(thunk)> func;
-		};
-#endif
 
 		static void Install()
 		{
-			#ifndef FALLOUT4
 			stl::write_thunk_call<Main_Update_Start>(REL::RelocationID(35565, 36564).address() + REL::Relocate(0x1E, 0x3E, 0x33));
-			stl::write_thunk_call<Main_Update_Timer>(REL::RelocationID(35565, 36564).address() + REL::Relocate(0x5E3, 0xAA3, 0x689));
-			#else
-			stl::write_thunk_call<Main_Update_Start>(REL::ID(1125396).address() + 0xBB);
-			#endif
 		}
 	};
 

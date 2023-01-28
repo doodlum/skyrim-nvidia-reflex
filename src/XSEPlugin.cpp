@@ -19,13 +19,6 @@ static void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 					break;
 				case ENBCallbackType::ENBCallback_PreSave:
 					Reflex::GetSingleton()->SaveINI();
-					Reflex::GetSingleton()->RefreshUI();
-					break;
-				case ENBCallbackType::ENBCallback_OnInit:;
-					Reflex::GetSingleton()->RefreshUI();
-					break;
-				case ENBCallbackType::ENBCallback_PostReset:;
-					Reflex::GetSingleton()->RefreshUI();
 					break;
 				}
 			});

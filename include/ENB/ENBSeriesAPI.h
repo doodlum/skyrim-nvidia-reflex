@@ -246,6 +246,13 @@ namespace ENB_API
 		{
 			return reinterpret_cast<_TwGetBarName>(GetProcAddress(enbmodule, "TwGetBarName"))(bar);
 		}
+
+		typedef int (*_TwDefine)(const char* def);
+
+		int TwDefine(const char* def)
+		{
+			return reinterpret_cast<_TwDefine>(GetProcAddress(enbmodule, "TwDefine"))(def);
+		}
 	};
 
 	/// <summary>
