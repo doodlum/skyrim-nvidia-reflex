@@ -128,11 +128,7 @@ void Reflex::LoadINI()
 	std::lock_guard<std::shared_mutex> lk(fileLock);
 	CSimpleIniA                        ini;
 	ini.SetUnicode();
-#ifndef FALLOUT4
 	ini.LoadFile(L"Data\\SKSE\\Plugins\\NVIDIA_Reflex.ini");
-#else
-	ini.LoadFile(L"Data\\F4SE\\Plugins\\NVIDIA_Reflex.ini");
-#endif
 	GetSettingBool("NVIDIA Reflex", bLowLatencyMode);
 	GetSettingBool("NVIDIA Reflex", bLowLatencyBoost);
 	GetSettingBool("NVIDIA Reflex", bUseMarkersToOptimize);
@@ -150,11 +146,7 @@ void Reflex::SaveINI()
 	SetSettingBool("NVIDIA Reflex", bUseMarkersToOptimize);
 	SetSettingBool("NVIDIA Reflex", bUseFPSLimit);
 	SetSettingFloat("NVIDIA Reflex", fFPSLimit);
-#ifndef FALLOUT4
 	ini.SaveFile(L"Data\\SKSE\\Plugins\\NVIDIA_Reflex.ini");
-#else
-	ini.SaveFile(L"Data\\F4SE\\Plugins\\NVIDIA_Reflex.ini");
-#endif
 }
 
 extern ENB_API::ENBSDKALT1001* g_ENB;
@@ -216,12 +208,8 @@ void GetTargetFPS(void* value, [[maybe_unused]] void* clientData)
 
 void Reflex::RefreshUI()
 {
-#	ifndef FALLOUT4
 	auto bar = g_ENB->TwGetBarByEnum(!REL::Module::IsVR() ? ENB_API::ENBWindowType::EditorBarEffects : ENB_API::ENBWindowType::EditorBarObjects);  // ENB misnames its own bar, whoops!
-	#else
-	auto bar = g_ENB->TwGetBarByEnum(ENB_API::ENBWindowType::EditorBarEffects);
-	#endif
-	g_ENB->TwAddVarRW(bar, "NVIDIA Reflex Enabled", ETwType::TW_TYPE_BOOLCPP, &bReflexEnabled, "group='MOD:NVIDIA Reflex' readonly=true");
+	g_ENB->TwAddVarRW(bar, "NVIDIA Reflex Supported", ETwType::TW_TYPE_BOOLCPP, &bReflexEnabled, "group='MOD:NVIDIA Reflex' readonly=true");
 	g_ENB->TwAddVarCB(bar, "Enable Low Latency Mode", ETwType::TW_TYPE_BOOLCPP, SetLowLatencyMode, GetLowLatencyMode, this, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "Enable Low Latency Boost", ETwType::TW_TYPE_BOOLCPP, SetLowLatencyBoost, GetLowLatencyBoost, this, "group='MOD:NVIDIA Reflex'");
 	g_ENB->TwAddVarCB(bar, "Use Markers To Optimize", ETwType::TW_TYPE_BOOLCPP, SetUseMarkersToOptimize, GetUseMarkersToOptimize, this, "group='MOD:NVIDIA Reflex'");

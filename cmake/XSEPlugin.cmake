@@ -7,8 +7,8 @@ if(BUILD_SKYRIM)
 	set(GameVersion "Skyrim")
 elseif(BUILD_FALLOUT4)
 	add_compile_definitions(FALLOUT4)
-	set(CommonLibPath "extern/CommonLibF4/CommonLibF4")
-	set(CommonLibName "CommonLibF4")
+	set(CommonLibPath "CommonLibF4/CommonLibF4")
+	set(CommonLibName "external/CommonLibF4")
 	set(GameVersion "Fallout 4")
 else()
 	message(
@@ -48,24 +48,13 @@ target_sources(
 		${CMAKE_CURRENT_BINARY_DIR}/cmake/Plugin.h
 		${CMAKE_CURRENT_BINARY_DIR}/cmake/version.rc
 		.clang-format
-		.editorconfig)
+		.editorconfig
+)
 
 target_precompile_headers(
 	"${PROJECT_NAME}"
 	PRIVATE
 		include/PCH.h
-)
-
-find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
-
-target_include_directories(
-	"${PROJECT_NAME}"
-	PUBLIC
-		${CMAKE_CURRENT_SOURCE_DIR}/include
-	PRIVATE
-		${CMAKE_CURRENT_BINARY_DIR}/cmake
-		${CMAKE_CURRENT_SOURCE_DIR}/src
-		${SIMPLEINI_INCLUDE_DIRS}
 )
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
@@ -75,7 +64,7 @@ set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_STATIC_RUNTIME ON)
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
-	# add_compile_definitions(_UNICODE)
+	add_compile_definitions(_UNICODE)
 
 	target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 
@@ -131,18 +120,5 @@ if (BUILD_SKYRIM)
 else()
 	add_subdirectory(${CommonLibPath} ${CommonLibName} EXCLUDE_FROM_ALL)
 endif()
-
-find_package(magic_enum CONFIG REQUIRED)
-
-target_link_libraries(
-	${PROJECT_NAME} 
-	PUBLIC 
-	${CommonLibName}::${CommonLibName}
-	PRIVATE
-		magic_enum::magic_enum
-		debug ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Debug/detours.lib
-		optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Release/detours.lib
-		optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/nvapi/nvapi64.lib
-)
 
 find_package(spdlog CONFIG REQUIRED)

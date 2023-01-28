@@ -1,91 +1,142 @@
 {
+	"version": 3,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 21,
+		"patch": 0
+	},
 	"configurePresets": [
 		{
-			"binaryDir": "${sourceDir}/build",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": {
-					"type": "STRING",
-					"value": "Debug"
-				}
-			},
-			"errors": {
-				"deprecated": true
-			},
+			"name": "common",
 			"hidden": true,
-			"name": "cmake-dev",
-			"warnings": {
-				"deprecated": true,
-				"dev": true
-			}
+			"cacheVariables": {
+				"SKSE_SUPPORT_XBYAK": "ON"
+			},
+			"binaryDir": "${sourceDir}/build"
 		},
 		{
+			"name": "vcpkg",
+			"hidden": true,
 			"cacheVariables": {
 				"CMAKE_TOOLCHAIN_FILE": {
 					"type": "STRING",
 					"value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-				}
-			},
-			"hidden": true,
-			"name": "vcpkg"
-		},
-		{
-			"cacheVariables": {
-				"CMAKE_MSVC_RUNTIME_LIBRARY": {
-					"type": "STRING",
-					"value": "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
 				},
-				"VCPKG_TARGET_TRIPLET": {
-					"type": "STRING",
-					"value": "x64-windows-static-md"
-				}
-			},
-			"hidden": true,
-			"name": "windows"
+				"VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
+			}
 		},
 		{
-			"architecture": {
-				"strategy": "set",
-				"value": "x64"
-			},
+			"name": "win64",
+			"hidden": true,
+			"architecture": "x64",
 			"cacheVariables": {
-				"CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /WX"
+				"CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
+			}
+		},
+		{
+			"name": "msvc",
+			"hidden": true,
+			"cacheVariables": {
+				"CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /WX $penv{CXXFLAGS}"
 			},
 			"generator": "Visual Studio 17 2022",
-			"inherits": [
-				"cmake-dev",
-				"vcpkg",
-				"windows"
-			],
-			"hidden": true,
-			"name": "vs2022-windows",
-			"toolset": "v143"
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"intelliSenseMode": "windows-msvc-x64",
+					"enableMicrosoftCodeAnalysis": true,
+					"enableClangTidyCodeAnalysis": true
+				}
+			}
 		},
 		{
-			"binaryDir": "${sourceDir}/build/skyrim",
+			"name": "AE",
 			"cacheVariables": {
-				"BUILD_SKYRIM": true
+				"BUILD_SKYRIM": true,
+				"ENABLE_SKYRIM_AE": "ON",
+				"ENABLE_SKYRIM_SE": "OFF",
+				"ENABLE_SKYRIM_VR": "OFF"
 			},
 			"inherits": [
-				"cmake-dev",
+				"common",
 				"vcpkg",
-				"windows",
-				"vs2022-windows"
-			],
-			"name": "skyrim"
+				"win64",
+				"msvc"
+			]
 		},
 		{
-			"binaryDir": "${sourceDir}/build/fo4",
+			"name": "SE",
 			"cacheVariables": {
-				"BUILD_FALLOUT4": true
+				"BUILD_SKYRIM": true,
+				"ENABLE_SKYRIM_AE": "OFF",
+				"ENABLE_SKYRIM_SE": "ON",
+				"ENABLE_SKYRIM_VR": "OFF"
 			},
 			"inherits": [
-				"cmake-dev",
+				"common",
 				"vcpkg",
-				"windows",
-				"vs2022-windows"
-			],
-			"name": "fo4"
+				"win64",
+				"msvc"
+			]
+		},
+		{
+			"name": "VR",
+			"cacheVariables": {
+				"BUILD_SKYRIM": true,
+				"ENABLE_SKYRIM_AE": "OFF",
+				"ENABLE_SKYRIM_SE": "OFF",
+				"ENABLE_SKYRIM_VR": "ON"
+			},
+			"inherits": [
+				"common",
+				"vcpkg",
+				"win64",
+				"msvc"
+			]
+		},
+		{
+			"name": "ALL",
+			"cacheVariables": {
+				"BUILD_SKYRIM": true,
+				"ENABLE_SKYRIM_AE": "ON",
+				"ENABLE_SKYRIM_SE": "ON",
+				"ENABLE_SKYRIM_VR": "ON"
+			},
+			"inherits": [
+				"common",
+				"vcpkg",
+				"win64",
+				"msvc"
+			]
+		},
+		{
+			"name": "PRE-AE",
+			"cacheVariables": {
+				"BUILD_SKYRIM": true,
+				"ENABLE_SKYRIM_AE": "OFF",
+				"ENABLE_SKYRIM_SE": "ON",
+				"ENABLE_SKYRIM_VR": "ON"
+			},
+			"inherits": [
+				"common",
+				"vcpkg",
+				"win64",
+				"msvc"
+			]
+		},
+		{
+			"name": "FLATRIM",
+			"cacheVariables": {
+				"BUILD_SKYRIM": true,
+				"ENABLE_SKYRIM_AE": "ON",
+				"ENABLE_SKYRIM_SE": "ON",
+				"ENABLE_SKYRIM_VR": "OFF"
+			},
+			"inherits": [
+				"common",
+				"vcpkg",
+				"win64",
+				"msvc"
+			]
 		}
-	],
-	"version": 3
+	]
 }

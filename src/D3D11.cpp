@@ -33,7 +33,6 @@ HRESULT WINAPI hk_IDXGISwapChain_Present(IDXGISwapChain* This, UINT SyncInterval
 	Reflex::GetSingleton()->NVAPI_SetLatencyMarker(PRESENT_END);
 	if (Reflex::GetSingleton()->bReflexEnabled)
 		NvAPI_D3D_Sleep(g_Device);
-	Reflex::GetSingleton()->NVAPI_SetLatencyMarker(INPUT_SAMPLE);
 	return hr;
 }
 
@@ -75,7 +74,6 @@ HRESULT WINAPI hk_D3D11CreateDeviceAndSwapChain(
 
 struct Hooks
 {
-#ifndef FALLOUT4
 	struct BSGraphics_Renderer_Init_InitD3D
 	{
 		static void thunk()
@@ -97,42 +95,12 @@ struct Hooks
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
-#else
-	struct BSGraphics_Renderer_Init_InitD3D
-	{
-		static void thunk(std::uintptr_t a_this, std::uintptr_t a_RendererInitOSData)
-		{
-			logger::info("Calling original Init3D");
-			func(a_this, a_RendererInitOSData);
-			logger::info("Detouring virtual function tables");
-			*(uintptr_t*)&ptrPresent = Detours::X64::DetourClassVTable(*(uintptr_t*)g_SwapChain, &hk_IDXGISwapChain_Present, 8);
-			*(uintptr_t*)&ptrClearState = Detours::X64::DetourClassVTable(*(uintptr_t*)g_DeviceContext, &hk_ClearState, 110);
-			logger::info("Initializing NVAPI");
-			Reflex::GetSingleton()->Initialize();
-			logger::info("Setting sleep mode for the first time");
-			Reflex::GetSingleton()->NVAPI_SetSleepMode();
-		}
-		static inline REL::Relocation<decltype(thunk)> func;
-	};
-#endif
+
 	#define PatchIAT(detour, module, procname) Detours::IATHook(g_ModuleBase, (module), (procname), (uintptr_t)(detour));
 
 	static void Install()
 	{
-#ifdef FALLOUT4
-		g_ModuleBase = (uintptr_t)GetModuleHandle(nullptr);
-		g_DllD3D11 = GetModuleHandleA("d3d11.dll");
-		if (g_DllD3D11) {
-			*(FARPROC*)&ptrD3D11CreateDeviceAndSwapChain = GetProcAddress(g_DllD3D11, "D3D11CreateDeviceAndSwapChain");
-			PatchIAT(hk_D3D11CreateDeviceAndSwapChain, "d3d11.dll", "D3D11CreateDeviceAndSwapChain");
-			logger::info("Patched d3d11.dll address table");
-		} else {
-			logger::critical("Failed to patch d3d11.dll address table");
-		}
-		stl::write_thunk_call<BSGraphics_Renderer_Init_InitD3D>(REL::ID(564405).address() + 0x12B);
-#else
 		stl::write_thunk_call<BSGraphics_Renderer_Init_InitD3D>(REL::RelocationID(75595, 77226).address() + REL::Relocate(0x50, 0x2BC));
-#endif
 		logger::info("Installed render startup hook");
 	}
 };
