@@ -1,3 +1,10 @@
+set(CommonLibPath "${CMAKE_SOURCE_DIR}/extern/CommonLibSSE-NG" CACHE PATH "Path to CommonLibSSE-NG")
+set(COMMONLIB_PREBUILT ON CACHE BOOL "Use prebuilt CommonLibSSE-NG" FORCE)
+set(COMMONLIB_PREBUILT_MULTICONFIG ON CACHE BOOL "Use prebuilt CommonLibSSE-NG with multi-config generators" FORCE)
+set(ENABLE_SKYRIM_SE ON CACHE BOOL "Enable Skyrim SE support" FORCE)
+set(ENABLE_SKYRIM_AE ON CACHE BOOL "Enable Skyrim AE support" FORCE)
+set(ENABLE_SKYRIM_VR ON CACHE BOOL "Enable Skyrim VR support" FORCE)
+
 option(BUILD_SKYRIM "Build for Skyrim" OFF)
 option(BUILD_FALLOUT4 "Build for Fallout 4" OFF)
 
@@ -74,7 +81,6 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 		"${PROJECT_NAME}"
 		PRIVATE
 			/MP
-			/await
 			/W4
 			/WX
 			/permissive-
@@ -116,7 +122,7 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 endif()
 
 if (BUILD_SKYRIM)
-	find_package(CommonLibSSE REQUIRED)
+	add_subdirectory(${CommonLibPath} ${CommonLibName} EXCLUDE_FROM_ALL)
 else()
 	add_subdirectory(${CommonLibPath} ${CommonLibName} EXCLUDE_FROM_ALL)
 endif()

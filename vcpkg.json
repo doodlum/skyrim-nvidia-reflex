@@ -1,11 +1,27 @@
 {
-"name": "commonlibsse-plugin",
+  "name": "commonlibsse-plugin",
   "version-string": "1.0.0",
   "description": "",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "dependencies": [
-    "commonlibsse-ng",
     "simpleini",
-    "magic-enum"
-  ]
+    "magic-enum",
+    {
+      "name": "directxmath",
+      "version>=": "2025-04-03"
+    },
+    {
+      "name": "directxtk",
+      "version>=": "2025-10-27"
+    },
+    {
+      "name": "fmt",
+      "version>=": "12.1.0"
+    },
+    {
+      "name": "spdlog",
+      "version>=": "1.16.0"
+    }
+  ],
+  "builtin-baseline": "ee12231b20c95013c6638d845d04c91559a1d1ff"
 }

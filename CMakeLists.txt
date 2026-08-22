@@ -31,5 +31,5 @@ target_link_libraries(
 		magic_enum::magic_enum
 		debug ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Debug/detours.lib
 		optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/detours/x64/Release/detours.lib
-		optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/nvapi/nvapi64.lib
+		optimized ${CMAKE_CURRENT_SOURCE_DIR}/extern/nvapi/amd64/nvapi64.lib
 )

@@ -3,7 +3,7 @@
 #include <SimpleIni.h>
 
 #define MAGIC_ENUM_RANGE_MAX 256
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <ENB/ENBSeriesAPI.h>
 

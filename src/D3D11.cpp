@@ -81,10 +81,10 @@ struct Hooks
 			logger::info("Calling original Init3D");
 			func();
 			logger::info("Accessing render device information");
-			auto manager = RE::BSRenderManager::GetSingleton();
-			g_Device = manager->GetRuntimeData().forwarder;
-			g_DeviceContext = manager->GetRuntimeData().context;
-			g_SwapChain = manager->GetRuntimeData().swapChain;
+			auto renderer = RE::BSGraphics::Renderer::GetSingleton();
+			g_Device = reinterpret_cast<ID3D11Device*>(renderer->GetRuntimeData().forwarder);
+			g_DeviceContext = reinterpret_cast<ID3D11DeviceContext*>(renderer->GetRuntimeData().context);
+			g_SwapChain = reinterpret_cast<IDXGISwapChain*>(RE::BSGraphics::Renderer::GetCurrentRenderWindow()->swapChain);
 			logger::info("Detouring virtual function tables");
 			*(uintptr_t*)&ptrPresent = Detours::X64::DetourClassVTable(*(uintptr_t*)g_SwapChain, &hk_IDXGISwapChain_Present, 8);
 			*(uintptr_t*)&ptrClearState = Detours::X64::DetourClassVTable(*(uintptr_t*)g_DeviceContext, &hk_ClearState, 110);

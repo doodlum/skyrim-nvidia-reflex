@@ -1,0 +1,6 @@
+[submodule "extern/CommonLibSSE-NG"]
+	path = extern/CommonLibSSE-NG
+	url = https://github.com/alandtse/CommonLibSSE-NG.git
+[submodule "extern/nvapi"]
+	path = extern/nvapi
+	url = https://github.com/NVIDIA/nvapi.git
